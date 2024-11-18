@@ -59,7 +59,7 @@ COSINE_THRESHOLD = 0.7
 LEV_THRESHOLD = 0.8
 
 if __name__ == "__main__":
-    file_path = "clustered_subset.csv"
+    file_path = 'clustered_subset_preprocessed.csv'
     clustered_potential_duplicates_df = pd.read_csv(file_path)
     similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed', cos_threshold = COSINE_THRESHOLD, lev_threshold = LEV_THRESHOLD)
     similarity_pair_df = assign_pair_id(similarity_pair_df)

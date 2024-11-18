@@ -4,6 +4,7 @@ import subprocess
 scripts = ['trialdata_duplicating.py',
            'json_to_dataframe_conversion.py',
            'data_clusterization.py',
+           'cluster_preprocessing.py'
            'pairdata_generation_v2_lev.py',
            'fp_minimalisation.py',
            'sample_generation.py',
