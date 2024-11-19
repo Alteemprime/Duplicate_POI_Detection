@@ -5,7 +5,17 @@ import Levenshtein as lev
 from tqdm import tqdm
 import time
 
-def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column = 'cluster_id', cos_threshold = 0.90, lev_threshold = 0.7 ):
+def validate_thresholds(cos_threshold, lev_threshold):
+    """
+    Validates the cosine and Levenshtein thresholds.
+    Raises ValueError if any threshold is invalid.
+    """
+    if cos_threshold is not None and (cos_threshold < 0.0 or cos_threshold > 1.0):
+        raise ValueError("Cosine threshold must be between 0.0 and 1.0")
+    if lev_threshold is not None and (lev_threshold <= 0.0 or lev_threshold > 1.0):
+        raise ValueError("Levenshtein threshold must be greater than 0.0 and less than or equal to 1.0")
+
+def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column = 'cluster_id', cos_threshold = 0.0, lev_threshold = 0.0 ):
     rows = []
     # Start the timer
     start_time = time.time()            
@@ -55,15 +65,21 @@ def cosine_simratio(string1,string2):
 def lev_ratio(string1,string2):
     return lev.ratio(string1,string2)
 
-COSINE_THRESHOLD = 0.7
-LEV_THRESHOLD = 0.8
+COSINE_THRESHOLD = None
+LEV_THRESHOLD = None
 
 if __name__ == "__main__":
     file_path = 'clustered_subset_preprocessed.csv'
-    clustered_potential_duplicates_df = pd.read_csv(file_path)
-    similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed', cos_threshold = COSINE_THRESHOLD, lev_threshold = LEV_THRESHOLD)
-    similarity_pair_df = assign_pair_id(similarity_pair_df)
-    #save relevant output
-    file_output = 'pairoutput_0,7Cosine_0,8Lev.csv'
-    similarity_pair_df.to_csv(file_output, index=False)
-    print(f'pair output file saved as {file_output} containing {len(similarity_pair_df)/2} pairs')
+    try:
+        validate_thresholds(COSINE_THRESHOLD,LEV_THRESHOLD)
+        clustered_potential_duplicates_df = pd.read_csv(file_path)
+        similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed', cos_threshold = COSINE_THRESHOLD, lev_threshold = LEV_THRESHOLD)
+        similarity_pair_df = assign_pair_id(similarity_pair_df)
+        #save relevant output
+        file_output = 'pairoutput_0,7Cosine_0,8Lev.csv'
+        similarity_pair_df.to_csv(file_output, index=False)
+        print(f'pair output file saved as {file_output} containing {len(similarity_pair_df)/2} pairs')
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
