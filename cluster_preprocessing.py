@@ -1,5 +1,7 @@
 import pandas as pd
 import re
+import os
+import sys
 
 #this dict should focus only making impact on tokenization process
 token_similarity_dict_indo ={'rm' : 'rumah makan',
@@ -55,3 +57,6 @@ if __name__ = "__main__":
     preprocessed_df[['cluster_id','names.0.name_preprocessed','name.set']].head()
     preprocessed_df.to_csv(file_out)
 
+    if os.stat(file_out).st_size == 0:
+        print(f'{file_out} does not contain any rows')
+        sys.exit(1)

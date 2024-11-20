@@ -5,6 +5,8 @@ from shapely.geometry import Point
 from scipy.spatial import cKDTree
 from tqdm import tqdm
 import time
+import os
+import sys
 
 R = 6371000
 
@@ -135,3 +137,7 @@ if __name__ == "__main__":
     merged_df = pd.merge(duplicate_clusters,df, on = 'site_code', how = 'left')
     file_out = 'clustered_subset.csv'
     merged_df.to_csv(file_out, index=False)
+    
+    if os.stat(file_out).st_size == 0:
+        print(f'{file_out} does not contain any rows')
+        sys.exit(1)

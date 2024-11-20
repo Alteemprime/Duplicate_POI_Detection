@@ -1,5 +1,7 @@
 import json
 import pandas as pd
+import os 
+import sys
 from tqdm import tqdm
 
 MAX_ROWS_PER_SHEET = 1000000
@@ -79,6 +81,8 @@ if __name__ == "__main__":
     # Step 3: Process the data and write to CSV using the full set of columns
     process_data(file_in, file_out, all_columns, skipped_entries)
                 
-    
+    if os.stat(file_out).st_size == 0:
+        print(f'{file_out} does not contain any rows')
+        sys.exit(1)
     
     

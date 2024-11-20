@@ -4,6 +4,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import Levenshtein as lev
 from tqdm import tqdm
 import time
+import os
+import sys
 
 def validate_thresholds(cos_threshold, lev_threshold):
     """
@@ -30,10 +32,10 @@ def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column
                     string1 = cluster_df.iloc[i][name_column]#init 2 strings to be compared
                     string2 = cluster_df.iloc[j][name_column]
                 
-                    if cosine_simratio(string1,string2) > cos_threshold :
+                    if cosine_simratio(string1,string2) >= cos_threshold :
                         # Store both rows as a tuple
                         rows.append((cluster_df.iloc[i], cluster_df.iloc[j]))
-                    elif lev_ratio(string1,string2) > lev_threshold :
+                    elif lev_ratio(string1,string2) >= lev_threshold :
                         rows.append((cluster_df.iloc[i], cluster_df.iloc[j]))
             #print(f'rows in for block : {rows}')
         except ValueError as e:
@@ -51,6 +53,7 @@ def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column
     return result_df
 
 def assign_pair_id(df):
+    df = df.reset_index(drop=True)
     df['pair_id'] = (df.index//2) + 1
     return df
 
@@ -65,8 +68,8 @@ def cosine_simratio(string1,string2):
 def lev_ratio(string1,string2):
     return lev.ratio(string1,string2)
 
-COSINE_THRESHOLD = None
-LEV_THRESHOLD = None
+COSINE_THRESHOLD = 1.0
+LEV_THRESHOLD = 1.0
 
 if __name__ == "__main__":
     file_path = 'clustered_subset_preprocessed.csv'
@@ -76,10 +79,17 @@ if __name__ == "__main__":
         similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed', cos_threshold = COSINE_THRESHOLD, lev_threshold = LEV_THRESHOLD)
         similarity_pair_df = assign_pair_id(similarity_pair_df)
         #save relevant output
-        file_output = 'pairoutput_0,7Cosine_0,8Lev.csv'
+        file_output = f'pairoutput_{str(COSINE_THRESHOLD)}Cosine_{str(LEV_THRESHOLD)}Lev.csv'
         similarity_pair_df.to_csv(file_output, index=False)
         print(f'pair output file saved as {file_output} containing {len(similarity_pair_df)/2} pairs')
     except ValueError as e:
         print(f"Error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+        
+    if os.stat(file_output).st_size == 0:
+        print(f'{file_output} does not contain any rows')
+        sys.exit(1)
+    else:
+        with open('fileoutputbuffer_info.txt', 'w') as f:
+        f.write(file_output)

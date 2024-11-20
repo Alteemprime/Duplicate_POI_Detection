@@ -1,9 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
 
-file_in = "pairoutput_0,7Cosine_0,8Lev.csv"
-df = pd.read_csv(file_in)
-
 #indonesia preprocessing constants
 IND_SCHOOL_PRODUCT = {'kb' : ['kb', 'paud'],
                      'tk' : ['tk'],
@@ -133,6 +130,11 @@ def drop_falseduplicates(df, product_column = 'product', brand_column = 'brand')
     print(f'detected_trueduplicates.csv contain {trueduplicates_df.shape[0] / 2} pair')
 
 if __name__ == "__main__":
+    #opens file that contain variable filename based on lev and cosine value user inputted
+    with open('fileoutputbuffer_info.txt', 'r') as f:
+        file_in = f.read().strip()
+    #file_in = "pairoutput_0,7Cosine_0,8Lev.csv"
+    df = pd.read_csv(file_in)
     tqdm.pandas()
     df = df.apply(lambda row: process_row(row), axis=1, desc = 'attributing relevant products and brands...')
     drop_falseduplicates(df)
