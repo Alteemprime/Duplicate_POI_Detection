@@ -1,6 +1,8 @@
 import pandas as pd
 from math import ceil
 import numpy as np
+import os
+import sys
 
 FILE_IN = 'detected_trueduplicates.csv'
 
@@ -20,7 +22,10 @@ def finite_population_correction(N,n):
 if __name__ == "__main__" :
 
     df = pd.read_csv(FILE_IN)
-
+    if os.stat(FILE_IN).st_size == 0:
+        print(f'{FILE_IN} does not contain any rows')
+        sys.exit(1)
+        
     print(f'pair data has shape of {df.shape}')
 
     sample_set = []
