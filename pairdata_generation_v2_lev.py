@@ -6,6 +6,7 @@ from tqdm import tqdm
 import time
 import os
 import sys
+import helpers
 
 def validate_thresholds(cos_threshold, lev_threshold):
     """
@@ -17,7 +18,10 @@ def validate_thresholds(cos_threshold, lev_threshold):
     if lev_threshold is not None and (lev_threshold <= 0.0 or lev_threshold > 1.0):
         raise ValueError("Levenshtein threshold must be greater than 0.0 and less than or equal to 1.0")
 
-def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column = 'cluster_id', cos_threshold = 0.0, lev_threshold = 0.0 ):
+def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column = 'cluster_id'):
+    cos_enble = param['cosine']['enabled']
+    lev_enble = param['levenshtein']['enabled']
+    
     rows = []
     # Start the timer
     start_time = time.time()            
@@ -32,10 +36,10 @@ def create_similarity_pair_df(df, name_column = 'names.0.name', clusterid_column
                     string1 = cluster_df.iloc[i][name_column]#init 2 strings to be compared
                     string2 = cluster_df.iloc[j][name_column]
                 
-                    if cosine_simratio(string1,string2) >= cos_threshold :
+                    if cos_enble and cosine_simratio(string1,string2) >= cos_thold :
                         # Store both rows as a tuple
                         rows.append((cluster_df.iloc[i], cluster_df.iloc[j]))
-                    elif lev_ratio(string1,string2) >= lev_threshold :
+                    elif lev_enble and lev_ratio(string1,string2) >= lev_thold :
                         rows.append((cluster_df.iloc[i], cluster_df.iloc[j]))
             #print(f'rows in for block : {rows}')
         except ValueError as e:
@@ -68,19 +72,32 @@ def cosine_simratio(string1,string2):
 def lev_ratio(string1,string2):
     return lev.ratio(string1,string2)
 
-COSINE_THRESHOLD = 1.0
-LEV_THRESHOLD = 1.0
-
 if __name__ == "__main__":
-    file_path = 'clustered_subset_preprocessed.csv'
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+    #set default lev and cosine as true
+    helpers.update_parameters(cosine['enabled'] = True)
+    helpers.update_parameters(levenshtein['enabled'] = True)
+    
+    cos_thold = param['cosine']['threshold']
+    lev_thold = param['levenshtein']['threshold']
+       
+    if cos_thold == 0:
+        helpers.update_parameters(cosine['enabled'] = False)        
+    if lev_thold == 0:
+        helpers.update_parameters(levenshtein['enabled'] = False)
+
+    file_in = param['next_file']
     try:
-        validate_thresholds(COSINE_THRESHOLD,LEV_THRESHOLD)
-        clustered_potential_duplicates_df = pd.read_csv(file_path)
-        similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed', cos_threshold = COSINE_THRESHOLD, lev_threshold = LEV_THRESHOLD)
+        validate_thresholds(cos_thold,lev_thold)
+        clustered_potential_duplicates_df = pd.read_csv(file_in)
+        similarity_pair_df = create_similarity_pair_df(clustered_potential_duplicates_df,name_column = 'names.0.name_preprocessed')
         similarity_pair_df = assign_pair_id(similarity_pair_df)
         #save relevant output
-        file_output = f'pairoutput_{str(COSINE_THRESHOLD)}Cosine_{str(LEV_THRESHOLD)}Lev.csv'
-        similarity_pair_df.to_csv(file_output, index=False)
+        file_out = f'{os.path.splitext(file_in)[0]}_c{cos_thold}_l{lev_thold}.csv'
+        similarity_pair_df.to_csv(file_out, index=False)
+        helpers.update_parameters('next_file' = file_out)
         print(f'pair output file saved as {file_output} containing {len(similarity_pair_df)/2} pairs')
     except ValueError as e:
         print(f"Error: {e}")

@@ -1,5 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
+import helpers
 
 #indonesia preprocessing constants
 IND_SCHOOL_PRODUCT = {'kb' : ['kb', 'paud'],
@@ -121,18 +122,23 @@ def drop_falseduplicates(df, product_column = 'product', brand_column = 'brand')
             index_todrop.extend([i, i + 1])
             continue
     
+    fp_file = f'{os.path.splitext(file_in)[0]}_fp.csv'
     falseduplicates_df = df.iloc[index_todrop]
-    falseduplicates_df.to_csv('detected_falseduplicates.csv', index=False)
-    print(f'detected_falseduplicates.csv contain {falseduplicates_df.shape[0] / 2} pair')
+    falseduplicates_df.to_csv(fp_file, index=False)
+    print(f'{fp_file} contain {falseduplicates_df.shape[0] / 2} pair')
     
+    tp_file = f'{os.path.splitext(file_in)[0]}_tp.csv'
     trueduplicates_df = df.drop(index= index_todrop).reset_index(drop=True)
-    trueduplicates_df.to_csv('detected_trueduplicates.csv', index=False)
-    print(f'detected_trueduplicates.csv contain {trueduplicates_df.shape[0] / 2} pair')
+    helpers.update_parameters('next_file' = tp_file)
+    trueduplicates_df.to_csv(tp_file, index=False)    
+    print(f'{tp_file} contain {trueduplicates_df.shape[0] / 2} pair')
 
 if __name__ == "__main__":
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
     #opens file that contain variable filename based on lev and cosine value user inputted
-    with open('fileoutputbuffer_info.txt', 'r') as f:
-        file_in = f.read().strip()
+    file_in = param['next_file']
     #file_in = "pairoutput_0,7Cosine_0,8Lev.csv"
     df = pd.read_csv(file_in)
     tqdm.pandas()

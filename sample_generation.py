@@ -3,8 +3,7 @@ from math import ceil
 import numpy as np
 import os
 import sys
-
-FILE_IN = 'detected_trueduplicates.csv'
+import helpers
 
 def sample_size_calculation_without_FPC(z=1.96,p=0.5,e=0.05):
     #confidence level 95% translate to 1.96 z score
@@ -20,10 +19,15 @@ def finite_population_correction(N,n):
     return round(result)
 
 if __name__ == "__main__" :
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+    
+    file_in = param['next_file']
 
-    df = pd.read_csv(FILE_IN)
-    if os.stat(FILE_IN).st_size == 0:
-        print(f'{FILE_IN} does not contain any rows')
+    df = pd.read_csv(file_in)
+    if os.stat(file_in).st_size == 0:
+        print(f'{file_in} does not contain any rows')
         sys.exit(1)
         
     print(f'pair data has shape of {df.shape}')
@@ -43,7 +47,7 @@ if __name__ == "__main__" :
 
     print(f'sample set generated with shape of {sample_set.shape}')
 
-    file_out = 'sample_set_0,7Cosine_0,8Lev.csv'
+    file_out = f'{os.path.splitext(file_in)[0]}_sample.csv'
     sample_set.to_csv(file_out, index = False)
 
     print(f'{file_out} saved successfully')

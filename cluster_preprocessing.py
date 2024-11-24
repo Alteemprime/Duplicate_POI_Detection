@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import os
 import sys
+import helpers
 
 #this dict should focus only making impact on tokenization process
 token_similarity_dict_indo ={'rm' : 'rumah makan',
@@ -46,16 +47,21 @@ def preprocess_data(df,name_column,locale_column='names.0.locale' ):
     
     return df
 
-file_in = 'clustered_subset.csv'
-file_out = 'clustered_subset_preprocessed.csv'
-
 if __name__ = "__main__":
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+    
+    file_in = param['next_file']
+    file_out = f'{os.path.splitext(file_in)[0]}_c.csv'
+
     df = pd.read_csv(file_in)
     df.info()
     preprocessed_df = preprocess_data(df,'names.0.name')
     preprocessed_df['name.set'] = preprocessed_df['names.0.name_preprocessed'].apply(lambda name: set(name))
     preprocessed_df[['cluster_id','names.0.name_preprocessed','name.set']].head()
     preprocessed_df.to_csv(file_out)
+    helpers.update_parameters('next_file' = file_out)
 
     if os.stat(file_out).st_size == 0:
         print(f'{file_out} does not contain any rows')

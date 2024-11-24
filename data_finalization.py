@@ -2,10 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import time
 import re
-
-cluster_path = 'clustered_subset.csv'
-falseduplicates_path = 'detected_falseduplicates.csv'
-trueduplicates_path = 'detected_trueduplicates.csv'
+import helpers
 
 #hour_merging
 DAYS_ORDER = ['Mo','Tu','We','Th','Fr','Sa','Su']
@@ -204,18 +201,22 @@ def merge_poiname(df, name_column='names.0.name'):
 
     return update_df, duplicate_df
 
-
-
 if __name__ == '__main__':
-    truedup_df = pd.read_csv(trueduplicates_path).reset_index(drop=True)
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+    
+    file_in = param['next_file']
+    
+    truedup_df = pd.read_csv(file_in).reset_index(drop=True)
 
     update_df, duplicate_df = merge_poiname(truedup_df)
     update_df.drop_duplicates(subset='site_code', inplace=True)
     duplicate_df.drop_duplicates(subset='site_code', inplace=True)
         
-    fileduplicate_out = 'duplicateid_set.csv'
+    fileduplicate_out = f'{os.path.splitext(file_in)[0]}_duplicateid_set.csv'
     duplicate_df.to_csv(fileduplicate_out, index=False)
-    fileupdate_out = 'updatedid_set.csv'
+    fileupdate_out = f'{os.path.splitext(file_in)[0]}_updatedid_set.csv'
     update_df.to_csv(fileupdate_out, index=False)
     print(f'{fileduplicate_out} created containing {len(duplicate_df)} duplicate ids')
     print(f'{fileupdate_out} created containing {len(duplicate_df)} ids that needs attribute updating')

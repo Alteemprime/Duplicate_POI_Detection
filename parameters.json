@@ -1,0 +1,16 @@
+{
+  "radius": 100, //in meters, integer
+  "max_member": 3, //max member in a cluster, integer
+  "cosine": {
+    "enabled": true,
+    "threshold": 0.7 //float, between 0 to 1
+  },
+  "levensthein": {
+    "enabled": true,
+    "threshold": 0.8 //float, between 0 to 1
+  },
+  "subset": 50000, //number of subset data for testing, integer
+  "next_file": ""
+}
+
+  

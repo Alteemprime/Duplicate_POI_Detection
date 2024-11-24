@@ -7,6 +7,7 @@ from tqdm import tqdm
 import time
 import os
 import sys
+import helpers
 
 R = 6371000
 
@@ -84,7 +85,11 @@ def cluster_points(gdf):
     return sitecode_to_cluster_id
 
 if __name__ == "__main__":
-    file_in = 'subset_data.csv'
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+
+    file_in = param['next_file']
     #flatten json can result bad data structure, if number of column is inconsistent
     #this is hard coded to 16 because resulting file 17th field which key are not detected on the json data
     df= pd.read_csv(file_in) 
@@ -135,8 +140,9 @@ if __name__ == "__main__":
     print(duplicate_clusters.info())
 
     merged_df = pd.merge(duplicate_clusters,df, on = 'site_code', how = 'left')
-    file_out = 'clustered_subset.csv'
+    file_out = f'{os.path.splitext(file_in)[0]}_r{param["radius"]}_m{param["max_member"]}.csv'    
     merged_df.to_csv(file_out, index=False)
+    helpers.update_parameters('next_file' = file_out)
     
     if os.stat(file_out).st_size == 0:
         print(f'{file_out} does not contain any rows')

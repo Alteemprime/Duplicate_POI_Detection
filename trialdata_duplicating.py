@@ -4,6 +4,7 @@ import json
 import shutil
 import re
 
+
 #read json file skipping error lines and get file size,created and modified date, and rows
 def get_file_info(file_path):
     file_size_bytes = os.path.getsize(file_path)
@@ -26,6 +27,7 @@ def get_file_info(file_path):
 def print_yellow_bold(message):
     print(f"\033[1;33m{message}\033[0m")
     
+'''
 #read input processed row on check and copy procedure and rewrite associated script file
 def update_json_to_dataframe_conversion_script(row_limit):
     script_path = "json_to_dataframe_conversion.py"
@@ -39,6 +41,7 @@ def update_json_to_dataframe_conversion_script(row_limit):
         file.write(new_script_content)
     print(f"Updated {script_path} with TRIAL_ROW_LIMIT = {row_limit}")
 
+'''
 #check if delivery json file exist then copy it as datacheck file
 def check_and_copy_file():
     delivery_file = "delivery.json"
@@ -78,8 +81,12 @@ def check_and_copy_file():
     return True, user_input
 
 if __name__ == "__main__":
+        
     proceed, row_limit = check_and_copy_file()
     if not proceed:
         exit(1)
-        
+    
+    '''
     update_json_to_dataframe_conversion_script(row_limit)
+    '''
+    

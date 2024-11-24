@@ -3,9 +3,7 @@ import pandas as pd
 import os 
 import sys
 from tqdm import tqdm
-
-MAX_ROWS_PER_SHEET = 1000000
-TRIAL_ROW_LIMIT = 1446176
+import helpers
 
 #loading json data with limiting rows, it seems pandas are more robust to handle large dataset
 def load_data(filename, row_limit=TRIAL_ROW_LIMIT):
@@ -67,9 +65,22 @@ def process_data(filename, file_out, all_columns, skipped_entries, row_limit=TRI
         json.dump(skipped_entries, file, indent=4)
 
 if __name__ == "__main__":
-    file_in = 'datacheck.json'
-    file_out = 'subset_data.csv'
+    MAX_ROWS_PER_SHEET = 1000000
+    TRIAL_ROW_LIMIT = 1446176
     
+    #set 'next_file' to default of ''
+    helpers.update_parameters('next_file' = '')
+
+    param_file = 'parameters.json'
+    #load parameters
+    param = helpers.load_parameters(param_file)
+    TRIAL_ROW_LIMIT = param['subset']
+    row_limit = TRIAL_ROW_LIMIT // 1000
+    
+    file_in = 'datacheck.json'
+    file_out = f's{row_limit}.csv'
+    helpers.update_parameters('next_file' = file_out)
+        
     # Step 1: Collect all unique columns from the entire dataset
     all_columns = list(collect_all_keys(file_in))
     for column in all_columns:
